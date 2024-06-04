@@ -17,6 +17,7 @@ export default function EmployeeList() {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            console.log("Fetched employees:", data);  // Debugging log
             setEmployees(data);
         } catch (error) {
             console.error("Failed to fetch employees:", error);
@@ -71,6 +72,13 @@ export default function EmployeeList() {
         }
     }
 
+    function handleAdd(e) {
+        e.preventDefault();
+        createEmployee(name, value);
+        setName('');
+        setValue('');
+    }
+
     return (
         <div>
             <h1>Employee List</h1>
@@ -86,12 +94,7 @@ export default function EmployeeList() {
             </ul>
 
             <h2>{editingEmployee ? 'Edit Employee' : 'Add Employee'}</h2>
-            <form onSubmit={editingEmployee ? handleUpdate : (e) => {
-                e.preventDefault();
-                createEmployee(name, value);
-                setName('');
-                setValue('');
-            }}>
+            <form onSubmit={editingEmployee ? handleUpdate : handleAdd}>
                 <input 
                     type="text" 
                     placeholder="Name" 
