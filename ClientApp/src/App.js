@@ -57,6 +57,7 @@ export default function EmployeeList() {
     }
 
     function handleEdit(employee) {
+        console.log("Editing employee:", employee);  // Debugging log
         setEditingEmployee(employee);
         setName(employee.name);
         setValue(employee.value);
@@ -65,6 +66,7 @@ export default function EmployeeList() {
     function handleUpdate(e) {
         e.preventDefault();
         if (editingEmployee) {
+            console.log("Updating employee:", editingEmployee.id, name, value);  // Debugging log
             updateEmployee(editingEmployee.id, name, value);
             setEditingEmployee(null);
             setName('');
@@ -74,6 +76,7 @@ export default function EmployeeList() {
 
     function handleAdd(e) {
         e.preventDefault();
+        console.log("Adding employee:", name, value);  // Debugging log
         createEmployee(name, value);
         setName('');
         setValue('');
