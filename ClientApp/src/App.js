@@ -4,34 +4,71 @@ export default function EmployeeList() {
     const [employees, setEmployees] = useState([]);
     const [name, setName] = useState('');
     const [value, setValue] = useState('');
+    const [editingEmployee, setEditingEmployee] = useState(null);
 
     useEffect(() => {
-        // Fetch employees when the component mounts
         getEmployees();
     }, []);
 
     async function getEmployees() {
-        const response = await fetch("/employees");
-        const data = await response.json();
-        setEmployees(data);
+        try {
+            const response = await fetch("/employees");
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setEmployees(data);
+        } catch (error) {
+            console.error("Failed to fetch employees:", error);
+        }
     }
 
     async function createEmployee(name, value) {
-        await fetch("/employees", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, value: value })
-        });
-        getEmployees(); // Refresh employee list after creating
+        try {
+            const response = await fetch("/employees", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, value })
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            getEmployees(); // Refresh employee list after creating
+        } catch (error) {
+            console.error("Failed to create employee:", error);
+        }
     }
 
     async function updateEmployee(id, name, value) {
-        await fetch(`/employees/${id}`, {  // Assuming your API requires the ID in the URL for update
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, value: value })
-        });
-        getEmployees(); // Refresh employee list after updating
+        try {
+            const response = await fetch(`/employees/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, value })
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            getEmployees(); // Refresh employee list after updating
+        } catch (error) {
+            console.error("Failed to update employee:", error);
+        }
+    }
+
+    function handleEdit(employee) {
+        setEditingEmployee(employee);
+        setName(employee.name);
+        setValue(employee.value);
+    }
+
+    function handleUpdate(e) {
+        e.preventDefault();
+        if (editingEmployee) {
+            updateEmployee(editingEmployee.id, name, value);
+            setEditingEmployee(null);
+            setName('');
+            setValue('');
+        }
     }
 
     return (
@@ -41,15 +78,15 @@ export default function EmployeeList() {
                 {employees.map((employee) => (
                     <li key={employee.id}>
                         {employee.name} - {employee.value}
-                        <button onClick={() => updateEmployee(employee.id, employee.name, employee.value)}>
+                        <button onClick={() => handleEdit(employee)}>
                             Edit
                         </button>
                     </li>
                 ))}
             </ul>
 
-            <h2>Add Employee</h2>
-            <form onSubmit={(e) => {
+            <h2>{editingEmployee ? 'Edit Employee' : 'Add Employee'}</h2>
+            <form onSubmit={editingEmployee ? handleUpdate : (e) => {
                 e.preventDefault();
                 createEmployee(name, value);
                 setName('');
@@ -67,7 +104,7 @@ export default function EmployeeList() {
                     value={value} 
                     onChange={(e) => setValue(e.target.value)} 
                 />
-                <button type="submit">Add</button>
+                <button type="submit">{editingEmployee ? 'Update' : 'Add'}</button>
             </form>
 
             <h2>Get Employees</h2>
